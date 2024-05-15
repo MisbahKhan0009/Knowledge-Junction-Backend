@@ -1,2 +1,5 @@
+# Ignore .env file
 .env
+
+# Ignore .DS_Store files (macOS system files)
 .DS_Store
