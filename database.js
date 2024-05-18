@@ -13,12 +13,63 @@ const pool = mysql
   .promise();
 
 export async function getBooks() {
-  const [rows] = await pool.query("SELECT * FROM books");
+  const query = `
+        SELECT 
+          Books.ISBN, 
+          Books.Title, 
+          Books.PublicationDate, 
+          Authors.FullName as Author, 
+          Publishers.Name as Publisher, 
+          Languages.Name as Language, 
+          Categories.Name as Category,
+          Book_Reviews.ReviewText as Review,
+          Book_Reviews.Rating as Rating
+        FROM 
+          Books
+        JOIN 
+          Authors ON Books.AuthorID = Authors.AuthorID
+        JOIN 
+          Publishers ON Books.PublisherID = Publishers.PublisherID
+        JOIN 
+          Languages ON Books.LanguageID = Languages.LanguageID
+        JOIN 
+          Categories ON Books.CategoryID = Categories.CategoryID
+        LEFT JOIN 
+          Book_Reviews ON Books.ISBN = Book_Reviews.BookISBN
+      `;
+
+  const [rows] = await pool.query(query);
   return rows;
 }
 
 export async function getBook(ISBN) {
-  const [rows] = await pool.query(`SELECT * FROM books WHERE ISBN = ?`, [ISBN]);
+  const query = `
+      SELECT 
+        Books.ISBN, 
+        Books.Title, 
+        Books.PublicationDate, 
+        Authors.FullName as Author, 
+        Publishers.Name as Publisher, 
+        Languages.Name as Language, 
+        Categories.Name as Category,
+        Book_Reviews.ReviewText as Review,
+        Book_Reviews.Rating as Rating
+      FROM 
+        Books
+      JOIN 
+        Authors ON Books.AuthorID = Authors.AuthorID
+      JOIN 
+        Publishers ON Books.PublisherID = Publishers.PublisherID
+      JOIN 
+        Languages ON Books.LanguageID = Languages.LanguageID
+      JOIN 
+        Categories ON Books.CategoryID = Categories.CategoryID
+      LEFT JOIN 
+        Book_Reviews ON Books.ISBN = Book_Reviews.BookISBN
+      WHERE
+        Books.ISBN = ?
+    `;
+  const [rows] = await pool.query(query, [ISBN]);
   return rows[0];
 }
 
@@ -36,7 +87,7 @@ export async function deleteBook(ISBN) {
 export async function updateBook(ISBN, newData) {
   const connection = await pool.getConnection();
   try {
-    await connection.query("UPDATE books SET ? WHERE ISBN = ?", [
+    await connection.query("UPDATE Books SET ? WHERE ISBN = ?", [
       newData,
       ISBN,
     ]);
@@ -68,13 +119,3 @@ export async function getDevelopers() {
     connection.release();
   }
 }
-
-// export async function createNote(title, content) {
-//   const [result] = await pool.query(
-//     `INSERT INTO notes (title, content) VALUES (? , ?)`,
-//     [title, content]
-//   );
-//   const id = result.insertId;
-
-//   return getNote(id);
-// }
