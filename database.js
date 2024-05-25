@@ -108,6 +108,37 @@ export async function createBook(newBook) {
   }
 }
 
+export async function getBookCopiesAndShelfDataByISBN(isbn) {
+  try {
+    // Query to get all book copies for the given ISBN
+    const [bookCopiesRows] = await pool.query(
+      "SELECT * FROM Book_Copies WHERE BookISBN = ?",
+      [isbn]
+    );
+
+    if (bookCopiesRows.length === 0) {
+      return { message: "No book copies found for the given ISBN." };
+    }
+
+    // Extract the unique ShelfID(s) from the book copies
+    const shelfIDs = [...new Set(bookCopiesRows.map((row) => row.ShelfID))];
+
+    // Query to get the shelf data for the extracted ShelfID(s)
+    const [shelfRows] = await pool.query(
+      "SELECT * FROM Shelves WHERE ShelfID IN (?)",
+      [shelfIDs]
+    );
+
+    return {
+      bookCopies: bookCopiesRows,
+      shelves: shelfRows,
+    };
+  } catch (error) {
+    console.error("Error fetching book copies and shelf data:", error);
+    throw error;
+  }
+}
+
 export async function getDevelopers() {
   const connection = await pool.getConnection();
   try {

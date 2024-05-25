@@ -6,6 +6,7 @@ import {
   updateBook,
   createBook,
   getDevelopers,
+  getBookCopiesAndShelfDataByISBN,
 } from "./database.js";
 import cors from "cors";
 
@@ -69,6 +70,16 @@ app.post("/books", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Failed to create book");
+  }
+});
+
+app.get("/shelf/:isbn", async (req, res) => {
+  const { isbn } = req.params;
+  try {
+    const data = await getBookCopiesAndShelfDataByISBN(isbn);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching data." });
   }
 });
 
