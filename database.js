@@ -284,3 +284,141 @@ export async function getBookIssuerReceiver(issuerReceiverID) {
     throw new Error("Failed to fetch book issuer/receiver");
   }
 }
+
+export async function getFinesByMember(memberID) {
+  const query = `
+    SELECT 
+      Books.Title,
+      Borrowed_Books_Fines.FineAmount,
+      Borrowed_Books_Fines.PaymentStatus
+    FROM Borrowed_Books_Fines
+    JOIN Book_Copies ON Borrowed_Books_Fines.CopyID = Book_Copies.CopyID
+    JOIN Books ON Book_Copies.BookISBN = Books.ISBN
+    WHERE Borrowed_Books_Fines.MemberID = ?;
+  `;
+  try {
+    const [rows] = await pool.query(query, [memberID]);
+    return rows;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch fines");
+  }
+}
+// from here
+export async function getFineInstallmentsByIssuer(issuerReceiverID) {
+  const query = `
+    SELECT 
+      Books.Title AS BookTitle,
+      Member_Profile.FullName AS MemberName,
+      Borrowed_Books_Fines.FineAmount,
+      Borrowed_Books_Fines.PaymentStatus,
+      Fine_Installments.InstallmentNumber,
+      Fine_Installments.InstallmentAmount
+    FROM Fine_Installments
+    JOIN Borrowed_Books_Fines ON Fine_Installments.FineID = Borrowed_Books_Fines.FineID
+    JOIN Book_Copies ON Borrowed_Books_Fines.CopyID = Book_Copies.CopyID
+    JOIN Books ON Book_Copies.BookISBN = Books.ISBN
+    JOIN Member_Profile ON Borrowed_Books_Fines.MemberID = Member_Profile.MemberID
+    WHERE Fine_Installments.IssuerReceiverID = ?;
+  `;
+  try {
+    const [rows] = await pool.query(query, [issuerReceiverID]);
+    return rows;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch fine installments");
+  }
+}
+
+// database.js
+
+// Function to add a member to the Member_Profile table
+export async function addMember(newData) {
+  const connection = await pool.getConnection();
+  try {
+    const {
+      FullName,
+      ContactInformation,
+      MembershipStatus,
+      Training,
+      HighestDegree,
+      Awards,
+      Password,
+    } = newData;
+
+    // Your database query to insert data into the Member_Profile table
+    const [result] = await connection.query(
+      "INSERT INTO Member_Profile (FullName, ContactInformation, MembershipStatus, Training, HighestDegree, Awards, Password) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [
+        FullName,
+        ContactInformation,
+        MembershipStatus,
+        Training,
+        HighestDegree,
+        Awards,
+        Password,
+      ]
+    );
+
+    const memberId = result.insertId;
+    return {
+      message: `Member registered successfully, Your MemberID: ${memberId}`,
+      memberId,
+    };
+  } catch (error) {
+    throw new Error(`Failed to add member: ${error}`);
+  } finally {
+    connection.release();
+  }
+}
+
+// Function to add a librarian to the Librarians table
+export async function addLibrarian(newData) {
+  const connection = await pool.getConnection();
+  try {
+    const { FullName, ContactInformation, Password } = newData;
+    const JobRole = "Librarian"; // Default value
+
+    // Your database query to insert data into the Librarians table
+    const [result] = await connection.query(
+      "INSERT INTO Librarians (FullName, ContactInformation, Password) VALUES (?, ?, ?)",
+      [FullName, ContactInformation, Password]
+    );
+
+    const librarianId = result.insertId;
+    return {
+      message: `Librarian registered successfully, Your LibrarianID: ${librarianId}`,
+      librarianId,
+    };
+  } catch (error) {
+    throw new Error(`Failed to add librarian: ${error}`);
+  } finally {
+    connection.release();
+  }
+}
+
+// Function to add an employee to the Book_Issuer_Receiver table
+export async function addEmployee(newData) {
+  const connection = await pool.getConnection();
+  try {
+    const { FullName, ContactInformation, Password } = newData;
+    const Designation = "Assistant Librarian"; // Default value
+
+    // Your database query to insert data into the Book_Issuer_Receiver table
+    const [result] = await connection.query(
+      "INSERT INTO Book_Issuer_Receiver (Name, ContactInformation, Password, Designation) VALUES (?, ?, ?, ?)",
+      [FullName, ContactInformation, Password, Designation]
+    );
+
+    const employeeId = result.insertId;
+
+    return {
+      message: `Employee registered successfully, Your EmployeeID: ${employeeId}`,
+      employeeId,
+    };
+  } catch (error) {
+    throw new Error(`Failed to add employee: ${error}`);
+  } finally {
+    connection.release();
+  }
+}

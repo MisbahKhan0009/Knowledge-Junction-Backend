@@ -10,6 +10,11 @@ import {
   getBookIssuerReceiver,
   getLibrarian,
   updateBook,
+  getFinesByMember,
+  getFineInstallmentsByIssuer,
+  addMember,
+  addLibrarian,
+  addEmployee,
 } from "./database.js";
 import cors from "cors";
 
@@ -148,4 +153,96 @@ app.use((err, req, res, next) => {
 
 app.listen(8080, () => {
   console.log("Server listening on port 8080");
+});
+
+app.get("/fines/:memberID", async (req, res) => {
+  const memberID = req.params.memberID;
+  try {
+    const fines = await getFinesByMember(memberID);
+    if (fines.length === 0) {
+      res.status(404).json({ error: "No fines found for this member" });
+    } else {
+      res.json(fines);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch fines" });
+  }
+});
+
+app.get("/fine-installments/:issuerReceiverID", async (req, res) => {
+  const issuerReceiverID = req.params.issuerReceiverID;
+  try {
+    const fineInstallments = await getFineInstallmentsByIssuer(
+      issuerReceiverID
+    );
+    if (fineInstallments.length === 0) {
+      res
+        .status(404)
+        .json({ error: "No fine installments found for this issuer/receiver" });
+    } else {
+      res.json(fineInstallments);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch fine installments" });
+  }
+});
+
+//from here
+app.get("/fine-installments/:issuerReceiverID", async (req, res) => {
+  const issuerReceiverID = req.params.issuerReceiverID;
+  try {
+    const fineInstallments = await getFineInstallmentsByIssuer(
+      issuerReceiverID
+    );
+    if (fineInstallments.length === 0) {
+      res
+        .status(404)
+        .json({ error: "No fine installments found for this issuer/receiver" });
+    } else {
+      res.json(fineInstallments);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch fine installments" });
+  }
+});
+
+// app.js
+
+// API endpoint to handle member signup
+app.post("/signup/member", async (req, res) => {
+  const newData = req.body;
+  try {
+    const response = await addMember(newData);
+    res.status(201).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Failed to sign up member");
+  }
+});
+
+// API endpoint to handle librarian signup
+app.post("/signup/librarian", async (req, res) => {
+  const newData = req.body;
+  try {
+    const response = await addLibrarian(newData);
+    res.status(201).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Failed to sign up librarian");
+  }
+});
+
+// API endpoint to handle employee signup
+app.post("/signup/employee", async (req, res) => {
+  const newData = req.body;
+  try {
+    const response = await addEmployee(newData);
+    res.status(201).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Failed to sign up employee");
+  }
 });
