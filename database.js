@@ -343,12 +343,13 @@ export async function addMember(newData) {
       Training,
       HighestDegree,
       Awards,
+      MembershipExpire,
       Password,
     } = newData;
 
     // Your database query to insert data into the Member_Profile table
     const [result] = await connection.query(
-      "INSERT INTO Member_Profile (FullName, ContactInformation, MembershipStatus, Training, HighestDegree, Awards, Password) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      `INSERT INTO Member_Profile (FullName, ContactInformation, MembershipStatus, Training, HighestDegree, Awards,MembershipExpire, Password) VALUES (?, ?, ?, ?, ?, ?,?, ?)`,
       [
         FullName,
         ContactInformation,
@@ -356,6 +357,7 @@ export async function addMember(newData) {
         Training,
         HighestDegree,
         Awards,
+        MembershipExpire,
         Password,
       ]
     );
