@@ -1,5 +1,5 @@
 import express from "express";
-// const bodyParser = require("body-parser");
+import cors from "cors";
 import {
   getBooks,
   getBook,
@@ -15,13 +15,11 @@ import {
   addMember,
   addLibrarian,
   addEmployee,
-} from "./database.js";
-import cors from "cors";
+} from "../database.js"; // Adjust the import path accordingly
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-// app.use(bodyParser.json());
 
 app.get("/books", async (req, res) => {
   try {
