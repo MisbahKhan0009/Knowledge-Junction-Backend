@@ -146,15 +146,6 @@ app.get("/shelf/:isbn", async (req, res) => {
   }
 });
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something broke!");
-});
-
-app.listen(8080, () => {
-  console.log("Server listening on port 8080");
-});
-
 app.get("/fines/:memberID", async (req, res) => {
   const memberID = req.params.memberID;
   try {
@@ -245,4 +236,13 @@ app.post("/signup/employee", async (req, res) => {
     console.error(error);
     res.status(500).send("Failed to sign up employee");
   }
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
+
+app.listen(3307, () => {
+  console.log("Server listening on port 3307");
 });
